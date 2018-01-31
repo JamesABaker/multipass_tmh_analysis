@@ -286,7 +286,7 @@ def length_sorting(sequence, tmh_locations):
     for n, i in enumerate(tmh_locations):
         location = i.split(",")
         if len(location) == 2:
-            print(str(location))
+            #print(str(location))
             if '<' in str(location):
                 list_of_tmh_features.append("null")
             elif '>' in str(location):
@@ -404,6 +404,9 @@ for input_file in input_filenames:
     # the empty lists.
     for record in SeqIO.parse(filename, input_format):
         transmembrane_record = False
+        fuzzy_records = False
+        this_record_tmd_count = 0
+
         # Sequence fasta file
         sequence = record.seq
 
@@ -411,12 +414,24 @@ for input_file in input_filenames:
         tmh_positions = str("")
         for i, f in enumerate(record.features):
             if f.type == feature_type:
-                transmembrane_record = True
+                this_record_tmd_count = this_record_tmd_count + 1
                 tmh_positions = tmh_positions + \
                     (str(f.location.start) + "," + str(f.location.end) + " ")
+                # The -1 is due to a mismatch between the biopython sequence in the record numbering and the pythonic 0 base counting.
+                tmh_sequence = sequence[f.location.start-1:f.location.end-1]
+                if "<" in str(tmh_sequence) or ">" in str(tmh_sequence) or "X" in str(tmh_sequence):
+                    fuzzy_records = True
+
+        if int(this_record_tmd_count) == int(tmh_filter_number) and fuzzy_records == False:
+            transmembrane_record = True
+        else:
+            pass
+
 
         # Avoids adding uncleared scores to lists if no TM regions were in
         # protein record.
+
+
         if transmembrane_record == True:
             # Adds the complexity score of a helix at (for example the 4th helix)
             # to the complexity list of lists (for example in the 4th position)
