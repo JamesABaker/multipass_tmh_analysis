@@ -46,7 +46,7 @@ print("You should have received a copy of the GNU General Public License")
 print("along with 3D TMH Complexity.  If not, see <http://www.gnu.org/licenses/>.")
 
 print(
-    "\n\n\nUSAGE:python3 [Script] [file] [TMH number for graph]\nEXAMPLE:python3 Uniprot_to_graphs_and_stats.py file.txt 7 ")
+    "\n\n\nUSAGE:python3 [Script] [file] [TMH number for graph] [OPTIONAL TMH filter number]\nEXAMPLE:python3 Uniprot_to_graphs_and_stats.py file.txt 7 7")
 # To do:
 # Separate hydrophobicity calculation - more efficient and flexible
 # Length restrictions and statistics for final results
@@ -57,6 +57,23 @@ print(
 input_filenames = [
     str(sys.argv[1])
 ]
+
+
+try:
+    tmh_filter_number = sys.argv[3]
+    try:
+        test = int(sys.argv[3]) + 1
+        tmh_filter_number = int(sys.argv[3])
+        tmh_filter = True
+        print("TMH filter set. Only considering proteins with",
+              tmh_filter_number, " tmhs")
+    except TypeError:
+        print("length filter must me an integer.")
+        tmh_filter = False
+except IndexError:
+    print("no tmh filter set.")
+    tmh_filter = False
+
 
 # Parameters for tmh allowances
 minimum_tmd_length = 16
@@ -274,7 +291,7 @@ def length_sorting(sequence, tmh_locations):
                 list_of_tmh_features.append("null")
             elif '>' in str(location):
                 list_of_tmh_features.append("null")
-            elif 'Unknown' in str(locationi):
+            elif 'Unknown' in str(location):
                 list_of_tmh_features.append("null")
             else:
                 start = int(location[0])
@@ -432,14 +449,12 @@ for input_file in input_filenames:
             for scale_number, hydrophobicity_scale in enumerate(range(len(hydrophobicity_for_record[1]))):
                 list_of_hydrophobicity_scores_in_tmh.append([])
                 for n in range(tmd_count):
-                    list_of_hydrophobicity_scores_in_tmh[
-                        scale_number].append([])
+                    list_of_hydrophobicity_scores_in_tmh[scale_number].append([])
                 for tmh_number, i in enumerate(hydrophobicity_for_record[0][scale_number]):
                     if i == "null":
                         pass
                     else:
-                        list_of_hydrophobicity_scores_in_tmh[
-                            scale_number][tmh_number].append(i)
+                        list_of_hydrophobicity_scores_in_tmh[scale_number][tmh_number].append(i)
 
     # Graphs
     violin_plot(list_of_complexity_scores_in_tmh[
@@ -464,7 +479,7 @@ for input_file in input_filenames:
             print("TMH ", n + 1)
             # print(i)
             print("Mean complexity:", np.mean(i), ", N:", len(i))
-            # list_of_complexity_scores_in_tmh = [
+            #list_of_complexity_scores_in_tmh = [
             #    x for x in list_of_hydrophobicity_scores_in_tmh if x != []]
 
             # Only calculating stats if the sample size is large enough to be worth it.
@@ -511,6 +526,7 @@ for input_file in input_filenames:
                 # the first helix is n=0, so we report it as n+1.
                 print("TMH ", n + 1)
                 print("Mean Hydrophobicity:", np.mean(i), ", N:", len(i))
+                print(i)
                 if len(i) > 10:
                     if n + 1 < len(no_empty_tmh_list_of_hydrophobicity_scores_in_tmh):
                         print("TMH ", n + 1, " to ", n + 2, ":", stat_tests(
