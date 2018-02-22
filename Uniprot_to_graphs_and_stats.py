@@ -6,6 +6,7 @@ import scipy
 import sys
 from scipy import stats
 import numpy as np
+import math
 
 import matplotlib
 matplotlib.use('Agg')
@@ -216,6 +217,19 @@ def bahadur_statistic(p_value, sample_size):
     bahadur_value = (abs(np.log(p_value))) / sample_size
     return(bahadur_value)
 
+# Shannon entropy term of a string
+
+def entropy(string):
+    '''
+    Use the following code for a custom command. via "Shannon's entropy equation is the standard method of calculation. Here is a simple implementation in Python, shamelessly copied from the Revelation codebase, and thus GPL licensed:"
+    '''
+    # get probability of chars in string
+    prob = [float(string.count(c)) / len(string)
+            for c in dict.fromkeys(list(string))]
+    # calculate the entropy
+    entropy = - sum([p * math.log(p) / math.log(2.0) for p in prob])
+    return entropy
+
 
 # Violin plots for datasets.
 rcParams.update({'figure.autolayout': True})
@@ -286,7 +300,7 @@ def length_sorting(sequence, tmh_locations):
     for n, i in enumerate(tmh_locations):
         location = i.split(",")
         if len(location) == 2:
-            #print(str(location))
+            # print(str(location))
             if '<' in str(location):
                 list_of_tmh_features.append("null")
             elif '>' in str(location):
@@ -386,15 +400,22 @@ for input_file in input_filenames:
     # Generate a list of empty lists, one for each tmh set.
     print("Maximum tmh count in", input_file, "is", tmd_count)
 
+    #Generates the empty lists of scores
     list_of_complexity_scores_in_tmh = []
     list_of_lengths_in_tmh = []
     list_of_hydrophobicity_scores_in_tmh = [[]]
+    list_of_entropy_scores_in_tmh=[]
 
+    # Fills the empty lists of scores with empty lists, one for each tmh.
     for n in range(tmd_count):
         list_of_complexity_scores_in_tmh.append([])
 
     for n in range(tmd_count):
         list_of_lengths_in_tmh.append([])
+
+    for n in range(tmd_count):
+        list_of_entropy_scores_in_tmh.append([])
+
 
     # The hydrophobicity needs to be done separately since it's also dependent
     # on the number of scales being used. ### ADDRESS THIS ISSUE. IT CAN BE
@@ -418,7 +439,8 @@ for input_file in input_filenames:
                 tmh_positions = tmh_positions + \
                     (str(f.location.start) + "," + str(f.location.end) + " ")
                 # The -1 is due to a mismatch between the biopython sequence in the record numbering and the pythonic 0 base counting.
-                tmh_sequence = sequence[f.location.start-1:f.location.end-1]
+                tmh_sequence = sequence[f.location.start -
+                                        1:f.location.end - 1]
                 if "<" in str(tmh_sequence) or ">" in str(tmh_sequence) or "X" in str(tmh_sequence):
                     fuzzy_records = True
 
@@ -427,10 +449,8 @@ for input_file in input_filenames:
         else:
             pass
 
-
         # Avoids adding uncleared scores to lists if no TM regions were in
         # protein record.
-
 
         if transmembrane_record == True:
             # Adds the complexity score of a helix at (for example the 4th helix)
@@ -444,7 +464,22 @@ for input_file in input_filenames:
                     pass
                 else:
                     list_of_complexity_scores_in_tmh[n].append(i)
-            # print(list_of_complexity_scores_in_tmh)
+
+            #This is the sequence entropy by itself. The complexity is specifically the TMSOC z-score.
+            #Any non-TMH features that might get through here won't because the filter has already removed records with non-conforming tmhs.
+            record_entropy_scores=[]
+            for i, f in enumerate(record.features):
+                if f.type == feature_type:
+                    # location start and end are human readable locations,
+                    # whereas the slices start counting at 0.
+                    feature_entropy_score=entropy(record.seq[f.location.start-1:f.location.end-1])
+                    record_entropy_scores.append(feature_entropy_score)
+            #adding entropy scores to list of lists.
+            for tmh_number, i in enumerate(record_entropy_scores):
+                if i == "null":
+                    pass
+                else:
+                    list_of_entropy_scores_in_tmh[tmh_number].append(i)
 
             # Adds the lengths of a helix at (for example the 4th helix)
             # to the complexity list of lists (for example in the 4th position)
@@ -453,6 +488,7 @@ for input_file in input_filenames:
                 # Null entries are added for TMHs that are not within length
                 # restrictions.
                 if i == "null":
+                    print("incorrect length found after filtering in ", str(record.id))
                     pass
                 else:
                     list_of_lengths_in_tmh[n].append(i)
@@ -464,21 +500,30 @@ for input_file in input_filenames:
             for scale_number, hydrophobicity_scale in enumerate(range(len(hydrophobicity_for_record[1]))):
                 list_of_hydrophobicity_scores_in_tmh.append([])
                 for n in range(tmd_count):
-                    list_of_hydrophobicity_scores_in_tmh[scale_number].append([])
+                    list_of_hydrophobicity_scores_in_tmh[scale_number].append([
+                    ])
                 for tmh_number, i in enumerate(hydrophobicity_for_record[0][scale_number]):
                     if i == "null":
                         pass
                     else:
-                        list_of_hydrophobicity_scores_in_tmh[scale_number][tmh_number].append(i)
+                        list_of_hydrophobicity_scores_in_tmh[scale_number][tmh_number].append(
+                            i)
 
     # Graphs
     violin_plot(list_of_complexity_scores_in_tmh[
-                0:max_tmd_to_print], str("Complexity"), input_file)
+                0:max_tmd_to_print], str("TMSOC z-score"), input_file)
     violin_plot(list_of_lengths_in_tmh[0:max_tmd_to_print], str(
         "Length"), input_file)
+    violin_plot(list_of_entropy_scores_in_tmh[0:max_tmd_to_print], str(
+        "Sequence Entropy"), input_file)
     for scale_number, scales in enumerate(list_of_hydrophobicity_scores_in_tmh[0:len(hydrophobicity_for_record[1])]):
         violin_plot(list_of_hydrophobicity_scores_in_tmh[scale_number][0:max_tmd_to_print], str(
-            hydrophobicity_for_record[1][scale_number] + " hydrophobiciity scale"), input_file)
+            hydrophobicity_for_record[1][scale_number] + " Hydrophobiciity Scale"), input_file)
+
+
+
+
+
 
     stat_tests_list = [scipy.stats.kruskal, scipy.stats.ks_2samp]
 
@@ -494,7 +539,7 @@ for input_file in input_filenames:
             print("TMH ", n + 1)
             # print(i)
             print("Mean complexity:", np.mean(i), ", N:", len(i))
-            #list_of_complexity_scores_in_tmh = [
+            # list_of_complexity_scores_in_tmh = [
             #    x for x in list_of_hydrophobicity_scores_in_tmh if x != []]
 
             # Only calculating stats if the sample size is large enough to be worth it.
@@ -507,6 +552,34 @@ for input_file in input_filenames:
                                 list_of_complexity_scores_in_tmh[x]) + len(i)
                             statistic_test_result = stat_tests(
                                 list_of_complexity_scores_in_tmh[n], list_of_complexity_scores_in_tmh[x])
+                            print(sample_size_for_bahadur,
+                                  statistic_test_result[1])
+                            print("TMH ", n + 1, " to ", x + 1, ":",  statistic_test_result, ", Bahadur slope=",
+                                  bahadur_statistic(statistic_test_result[1], sample_size_for_bahadur))
+
+        print("\n")
+
+        # stats for entropy
+        for n, i in enumerate(list_of_entropy_scores_in_tmh):
+
+            # n is the index, so for human readable numbers we need to add 1. i.e
+            # the first helix is n=0, so we report it as n+1.
+            print("TMH ", n + 1)
+            # print(i)
+            print("Mean entropy:", np.mean(i), ", N:", len(i))
+            # list_of_entropy_scores_in_tmh = [
+            #    x for x in list_of_hydrophobicity_scores_in_tmh if x != []]
+
+            # Only calculating stats if the sample size is large enough to be worth it.
+            sample_size_threshold = 10
+            if len(i) > sample_size_threshold:
+                if n + 1 < len(list_of_entropy_scores_in_tmh):
+                    for x in range(len(list_of_entropy_scores_in_tmh)):
+                        if x > n and len(list_of_entropy_scores_in_tmh[x]) > sample_size_threshold:
+                            sample_size_for_bahadur = len(
+                                list_of_entropy_scores_in_tmh[x]) + len(i)
+                            statistic_test_result = stat_tests(
+                                list_of_entropy_scores_in_tmh[n], list_of_entropy_scores_in_tmh[x])
                             print(sample_size_for_bahadur,
                                   statistic_test_result[1])
                             print("TMH ", n + 1, " to ", x + 1, ":",  statistic_test_result, ", Bahadur slope=",
@@ -541,7 +614,7 @@ for input_file in input_filenames:
                 # the first helix is n=0, so we report it as n+1.
                 print("TMH ", n + 1)
                 print("Mean Hydrophobicity:", np.mean(i), ", N:", len(i))
-                print(i)
+                #print(i)
                 if len(i) > 10:
                     if n + 1 < len(no_empty_tmh_list_of_hydrophobicity_scores_in_tmh):
                         print("TMH ", n + 1, " to ", n + 2, ":", stat_tests(
