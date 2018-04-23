@@ -200,10 +200,19 @@ def hydrophobicity_calculation(sequence, tmh_locations):
                         for residue in tmh_sequence:
                             hydrophobicity_values_in_tmh.append(
                                 hydrophobicity_type.get(residue))
-                        tmh_hydrophobicity = np.mean(
-                            hydrophobicity_values_in_tmh)
-                        list_of_hydrophobicity_by_tmh_number.append(
-                            tmh_hydrophobicity)
+                        print(hydrophobicity_values_in_tmh)
+                        try:
+                            for i in hydrophobicity_values_in_tmh:
+                                test_if_number=i+1
+
+
+                            tmh_hydrophobicity = np.mean(
+                                hydrophobicity_values_in_tmh)
+                            list_of_hydrophobicity_by_tmh_number.append(
+                                tmh_hydrophobicity)
+                        except(TypeError):
+                            # There was no number!
+                            list_of_hydrophobicity_by_tmh_number.append("null")
                     else:
                         list_of_hydrophobicity_by_tmh_number.append("null")
         list_of_tmhs_from_different_hyrodobicity_dictionaries.append(
@@ -439,12 +448,21 @@ for input_file in input_filenames:
                 tmh_positions = tmh_positions + \
                     (str(f.location.start) + "," + str(f.location.end) + " ")
                 # The -1 is due to a mismatch between the biopython sequence in the record numbering and the pythonic 0 base counting.
-                tmh_sequence = sequence[f.location.start -
-                                        1:f.location.end - 1]
-                if "<" in str(tmh_sequence) or ">" in str(tmh_sequence) or "X" in str(tmh_sequence):
-                    fuzzy_records = True
 
-        if int(this_record_tmd_count) == int(tmh_filter_number) and fuzzy_records == False:
+                try:
+                    # We need to test to see if there are numbers in the position values. This explicit check will help save time removing bad entries.
+                    f.location.start+1
+                    f.location.end+1
+                    tmh_sequence = sequence[f.location.start -
+                                            1:f.location.end - 1]
+                    if "<" in str(tmh_sequence) or ">" in str(tmh_sequence) or "X" in str(tmh_sequence):
+                        fuzzy_records = True
+                except(TypeError):
+                    print("None integer/float detected in positions in", record.id)
+
+        if tmh_filter == True and int(this_record_tmd_count) == int(tmh_filter_number) and fuzzy_records == False:
+            transmembrane_record = True
+        elif tmh_filter == False and fuzzy_records == False:
             transmembrane_record = True
         else:
             pass
