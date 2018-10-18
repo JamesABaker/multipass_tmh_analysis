@@ -1,0 +1,34 @@
+t2r_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+7TM_list_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]sodium[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+ion_channel_uniref50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]ion[[:space:]]transport.txt filter=lfs diff=lfs merge=lfs -text
+Opsins_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+pore_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+swissprot_transmem.txt filter=lfs diff=lfs merge=lfs -text
+tetraspanins.txt filter=lfs diff=lfs merge=lfs -text
+fungalmating_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+GPCR_controlledvocabularyquery_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]chloride[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+KW_GPCR_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]ion[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]porin.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]potassium[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+Ammonia[[:space:]]transport[[:space:]]KW-0924[[:space:]]Uniref50.txt filter=lfs diff=lfs merge=lfs -text
+GPCR_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]voltage[[:space:]]gated[[:space:]]ion[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+ig_uniref50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]sugar[[:space:]]transport.txt filter=lfs diff=lfs merge=lfs -text
+ligand_gated_ion_channel_uniref50.txt filter=lfs diff=lfs merge=lfs -text
+voltage_gated_ion_channel_uniref50.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]calcium[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]protein[[:space:]]transport.txt filter=lfs diff=lfs merge=lfs -text
+Membrane[[:space:]]attack[[:space:]]complex	KW-0473[[:space:]]Uniref50.txt filter=lfs diff=lfs merge=lfs -text
+metabotropicglutamate_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+frizzledsmooth_UniRef50.txt filter=lfs diff=lfs merge=lfs -text
+GPCR_UniRef50_test.txt filter=lfs diff=lfs merge=lfs -text
+sugar_transporters_uniref50.txt filter=lfs diff=lfs merge=lfs -text
+7tmrlist.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]integrin.txt filter=lfs diff=lfs merge=lfs -text
+KW[[:space:]]ligand[[:space:]]gated[[:space:]]ion[[:space:]]channel.txt filter=lfs diff=lfs merge=lfs -text
+Sulfate[[:space:]]transport	KW-0764[[:space:]]Uniref50.txt filter=lfs diff=lfs merge=lfs -text

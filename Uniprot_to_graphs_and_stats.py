@@ -187,34 +187,38 @@ def hydrophobicity_calculation(sequence, tmh_locations):
                 elif '>' in str(location):
                     list_of_hydrophobicity_by_tmh_number.append("null")
                 else:
-                    start = int(location[0])
-                    end = int(location[1])
-
-                    # location start and end are human readable locations,
-                    # whereas the slices start counting at 0.
-                    tmh_sequence = sequence[start - 1:end - 1]
-
-                    # Length restriction and 'X' residues are counted together.
-                    if len(tmh_sequence) < maximum_tmd_length and len(tmh_sequence) > minimum_tmd_length and 'X' not in tmh_sequence:
-                        hydrophobicity_values_in_tmh = []
-                        for residue in tmh_sequence:
-                            hydrophobicity_values_in_tmh.append(
-                                hydrophobicity_type.get(residue))
-                        print(hydrophobicity_values_in_tmh)
-                        try:
-                            for i in hydrophobicity_values_in_tmh:
-                                test_if_number=i+1
-
-
-                            tmh_hydrophobicity = np.mean(
-                                hydrophobicity_values_in_tmh)
-                            list_of_hydrophobicity_by_tmh_number.append(
-                                tmh_hydrophobicity)
-                        except(TypeError):
-                            # There was no number!
-                            list_of_hydrophobicity_by_tmh_number.append("null")
-                    else:
+                    if str('UnknownPosition') in str(location[0]) or str(location[1]):
                         list_of_hydrophobicity_by_tmh_number.append("null")
+                    else:
+                        start = int(location[0])
+                        end = int(location[1])
+
+
+                        # location start and end are human readable locations,
+                        # whereas the slices start counting at 0.
+                        tmh_sequence = sequence[start - 1:end - 1]
+
+                        # Length restriction and 'X' residues are counted together.
+                        if len(tmh_sequence) < maximum_tmd_length and len(tmh_sequence) > minimum_tmd_length and 'X' not in tmh_sequence:
+                            hydrophobicity_values_in_tmh = []
+                            for residue in tmh_sequence:
+                                hydrophobicity_values_in_tmh.append(
+                                    hydrophobicity_type.get(residue))
+                            # print(hydrophobicity_values_in_tmh)
+                            try:
+                                for i in hydrophobicity_values_in_tmh:
+                                    test_if_number=i+1
+
+
+                                tmh_hydrophobicity = np.mean(
+                                    hydrophobicity_values_in_tmh)
+                                list_of_hydrophobicity_by_tmh_number.append(
+                                    tmh_hydrophobicity)
+                            except(TypeError):
+                                # There was no number!
+                                list_of_hydrophobicity_by_tmh_number.append("null")
+                        else:
+                            list_of_hydrophobicity_by_tmh_number.append("null")
         list_of_tmhs_from_different_hyrodobicity_dictionaries.append(
             list_of_hydrophobicity_by_tmh_number)
     return(list_of_tmhs_from_different_hyrodobicity_dictionaries, list_of_dictionary_types)
@@ -395,8 +399,10 @@ for input_file in input_filenames:
     # We iterate through each record, parsed by biopython to find the most
     # number of TMDs. This avoids list index exceeded errors later on.
     tmd_count = 0
+    number_of_records = 0
     for record in SeqIO.parse(filename, input_format):
         this_record_tmd_count = 0
+        number_of_records = number_of_records +1
         for i, f in enumerate(record.features):
             if f.type == feature_type:
                 this_record_tmd_count = this_record_tmd_count + 1
@@ -432,10 +438,14 @@ for input_file in input_filenames:
 
     # Now we can iterate through the records inserting complexity scores into
     # the empty lists.
+    record_number = 1
     for record in SeqIO.parse(filename, input_format):
         transmembrane_record = False
         fuzzy_records = False
         this_record_tmd_count = 0
+        percent_complete = int(record_number/number_of_records*100)
+        print("Processing record", record.id, "\n", percent_complete, "%")
+        record_number=record_number+1
 
         # Sequence fasta file
         sequence = record.seq
@@ -488,10 +498,15 @@ for input_file in input_filenames:
             record_entropy_scores=[]
             for i, f in enumerate(record.features):
                 if f.type == feature_type:
-                    # location start and end are human readable locations,
-                    # whereas the slices start counting at 0.
-                    feature_entropy_score=entropy(record.seq[f.location.start-1:f.location.end-1])
-                    record_entropy_scores.append(feature_entropy_score)
+                    try:
+                        test_if_positions_are_numbers = f.location.start+1
+                        test_if_positions_are_numbers = f.location.end+1
+                        # location start and end are human readable locations,
+                        # whereas the slices start counting at 0.
+                        feature_entropy_score=entropy(record.seq[f.location.start-1:f.location.end-1])
+                        record_entropy_scores.append(feature_entropy_score)
+                    except(TypeError):
+                        pass
             #adding entropy scores to list of lists.
             for tmh_number, i in enumerate(record_entropy_scores):
                 if i == "null":
@@ -535,6 +550,8 @@ for input_file in input_filenames:
     violin_plot(list_of_entropy_scores_in_tmh[0:max_tmd_to_print], str(
         "Sequence Entropy"), input_file)
     for scale_number, scales in enumerate(list_of_hydrophobicity_scores_in_tmh[0:len(hydrophobicity_for_record[1])]):
+        print(list_of_hydrophobicity_scores_in_tmh[scale_number][0:max_tmd_to_print], str(
+            hydrophobicity_for_record[1][scale_number] + " Hydrophobiciity Scale"), input_file)
         violin_plot(list_of_hydrophobicity_scores_in_tmh[scale_number][0:max_tmd_to_print], str(
             hydrophobicity_for_record[1][scale_number] + " Hydrophobiciity Scale"), input_file)
 
