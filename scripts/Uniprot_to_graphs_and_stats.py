@@ -1,5 +1,7 @@
 from __future__ import division
-from decimal import *
+import time
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from Bio import SeqIO
 import subprocess
 import scipy
@@ -7,14 +9,6 @@ import sys
 from scipy import stats
 import numpy as np
 import math
-
-import matplotlib
-matplotlib.use('Agg')
-
-import matplotlib.pyplot as plt
-import time
-from matplotlib import rcParams
-
 
 #    This file is part of 3D TMH Complexity.
 #
@@ -193,7 +187,6 @@ def hydrophobicity_calculation(sequence, tmh_locations):
                         start = int(location[0])
                         end = int(location[1])
 
-
                         # location start and end are human readable locations,
                         # whereas the slices start counting at 0.
                         tmh_sequence = sequence[start - 1:end - 1]
@@ -207,8 +200,7 @@ def hydrophobicity_calculation(sequence, tmh_locations):
                             # print(hydrophobicity_values_in_tmh)
                             try:
                                 for i in hydrophobicity_values_in_tmh:
-                                    test_if_number=i+1
-
+                                    test_if_number = i + 1
 
                                 tmh_hydrophobicity = np.mean(
                                     hydrophobicity_values_in_tmh)
@@ -216,7 +208,8 @@ def hydrophobicity_calculation(sequence, tmh_locations):
                                     tmh_hydrophobicity)
                             except(TypeError):
                                 # There was no number!
-                                list_of_hydrophobicity_by_tmh_number.append("null")
+                                list_of_hydrophobicity_by_tmh_number.append(
+                                    "null")
                         else:
                             list_of_hydrophobicity_by_tmh_number.append("null")
         list_of_tmhs_from_different_hyrodobicity_dictionaries.append(
@@ -231,6 +224,7 @@ def bahadur_statistic(p_value, sample_size):
     return(bahadur_value)
 
 # Shannon entropy term of a string
+
 
 def entropy(string):
     '''
@@ -402,7 +396,7 @@ for input_file in input_filenames:
     number_of_records = 0
     for record in SeqIO.parse(filename, input_format):
         this_record_tmd_count = 0
-        number_of_records = number_of_records +1
+        number_of_records = number_of_records + 1
         for i, f in enumerate(record.features):
             if f.type == feature_type:
                 this_record_tmd_count = this_record_tmd_count + 1
@@ -415,11 +409,11 @@ for input_file in input_filenames:
     # Generate a list of empty lists, one for each tmh set.
     print("Maximum tmh count in", input_file, "is", tmd_count)
 
-    #Generates the empty lists of scores
+    # Generates the empty lists of scores
     list_of_complexity_scores_in_tmh = []
     list_of_lengths_in_tmh = []
     list_of_hydrophobicity_scores_in_tmh = [[]]
-    list_of_entropy_scores_in_tmh=[]
+    list_of_entropy_scores_in_tmh = []
 
     # Fills the empty lists of scores with empty lists, one for each tmh.
     for n in range(tmd_count):
@@ -430,7 +424,6 @@ for input_file in input_filenames:
 
     for n in range(tmd_count):
         list_of_entropy_scores_in_tmh.append([])
-
 
     # The hydrophobicity needs to be done separately since it's also dependent
     # on the number of scales being used. ### ADDRESS THIS ISSUE. IT CAN BE
@@ -443,9 +436,9 @@ for input_file in input_filenames:
         transmembrane_record = False
         fuzzy_records = False
         this_record_tmd_count = 0
-        percent_complete = int(record_number/number_of_records*100)
+        percent_complete = int(record_number / number_of_records * 100)
         print("Processing record", record.id, "\n", percent_complete, "%")
-        record_number=record_number+1
+        record_number = record_number + 1
 
         # Sequence fasta file
         sequence = record.seq
@@ -461,8 +454,8 @@ for input_file in input_filenames:
 
                 try:
                     # We need to test to see if there are numbers in the position values. This explicit check will help save time removing bad entries.
-                    f.location.start+1
-                    f.location.end+1
+                    f.location.start + 1
+                    f.location.end + 1
                     tmh_sequence = sequence[f.location.start -
                                             1:f.location.end - 1]
                     if "<" in str(tmh_sequence) or ">" in str(tmh_sequence) or "X" in str(tmh_sequence):
@@ -470,9 +463,9 @@ for input_file in input_filenames:
                 except(TypeError):
                     print("None integer/float detected in positions in", record.id)
 
-        if tmh_filter == True and int(this_record_tmd_count) == int(tmh_filter_number) and fuzzy_records == False:
+        if tmh_filter is True and int(this_record_tmd_count) == int(tmh_filter_number) and fuzzy_records is False:
             transmembrane_record = True
-        elif tmh_filter == False and fuzzy_records == False:
+        elif tmh_filter is False and fuzzy_records is False:
             transmembrane_record = True
         else:
             pass
@@ -480,7 +473,7 @@ for input_file in input_filenames:
         # Avoids adding uncleared scores to lists if no TM regions were in
         # protein record.
 
-        if transmembrane_record == True:
+        if transmembrane_record is True:
             # Adds the complexity score of a helix at (for example the 4th helix)
             # to the complexity list of lists (for example in the 4th position)
             record_complexity_scores = tmsoc_calculation(
@@ -493,21 +486,22 @@ for input_file in input_filenames:
                 else:
                     list_of_complexity_scores_in_tmh[n].append(i)
 
-            #This is the sequence entropy by itself. The complexity is specifically the TMSOC z-score.
-            #Any non-TMH features that might get through here won't because the filter has already removed records with non-conforming tmhs.
-            record_entropy_scores=[]
+            # This is the sequence entropy by itself. The complexity is specifically the TMSOC z-score.
+            # Any non-TMH features that might get through here won't because the filter has already removed records with non-conforming tmhs.
+            record_entropy_scores = []
             for i, f in enumerate(record.features):
                 if f.type == feature_type:
                     try:
-                        test_if_positions_are_numbers = f.location.start+1
-                        test_if_positions_are_numbers = f.location.end+1
+                        test_if_positions_are_numbers = f.location.start + 1
+                        test_if_positions_are_numbers = f.location.end + 1
                         # location start and end are human readable locations,
                         # whereas the slices start counting at 0.
-                        feature_entropy_score=entropy(record.seq[f.location.start-1:f.location.end-1])
+                        feature_entropy_score = entropy(
+                            record.seq[f.location.start - 1:f.location.end - 1])
                         record_entropy_scores.append(feature_entropy_score)
                     except(TypeError):
                         pass
-            #adding entropy scores to list of lists.
+            # adding entropy scores to list of lists.
             for tmh_number, i in enumerate(record_entropy_scores):
                 if i == "null":
                     pass
@@ -521,7 +515,8 @@ for input_file in input_filenames:
                 # Null entries are added for TMHs that are not within length
                 # restrictions.
                 if i == "null":
-                    print("incorrect length found after filtering in ", str(record.id))
+                    print("incorrect length found after filtering in ",
+                          str(record.id))
                     pass
                 else:
                     list_of_lengths_in_tmh[n].append(i)
@@ -554,11 +549,6 @@ for input_file in input_filenames:
             hydrophobicity_for_record[1][scale_number] + " Hydrophobiciity Scale"), input_file)
         violin_plot(list_of_hydrophobicity_scores_in_tmh[scale_number][0:max_tmd_to_print], str(
             hydrophobicity_for_record[1][scale_number] + " Hydrophobiciity Scale"), input_file)
-
-
-
-
-
 
     stat_tests_list = [scipy.stats.kruskal, scipy.stats.ks_2samp]
 
@@ -649,7 +639,7 @@ for input_file in input_filenames:
                 # the first helix is n=0, so we report it as n+1.
                 print("TMH ", n + 1)
                 print("Mean Hydrophobicity:", np.mean(i), ", N:", len(i))
-                #print(i)
+                # print(i)
                 if len(i) > 10:
                     if n + 1 < len(no_empty_tmh_list_of_hydrophobicity_scores_in_tmh):
                         print("TMH ", n + 1, " to ", n + 2, ":", stat_tests(
