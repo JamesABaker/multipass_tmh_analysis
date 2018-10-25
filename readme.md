@@ -1,4 +1,4 @@
-# Cooperative TMH analysis source code.
+# Multipass TMH analysis source code.
 
 ## Running the code
 
